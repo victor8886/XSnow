@@ -8,13 +8,20 @@ XSnow，X：未知一切，取其通用之意；Snow：雪，取其纯净之意�
 
 - 项目地址：[https://github.com/xiaoyaoyou1212/XSnow](https://github.com/xiaoyaoyou1212/XSnow)
 
-- 项目依赖：`compile 'com.vise.xiaoyaoyou:xsnow:2.1.1'`
+- 项目依赖：`compile 'com.vise.xiaoyaoyou:xsnow:2.1.5'`
 
 ### 版本说明
-[![LatestVersion](https://img.shields.io/badge/LatestVersion-2.1.1-orange.svg)](https://github.com/xiaoyaoyou1212/XSnow/blob/master/VERSION.md)
+[![LatestVersion](https://img.shields.io/badge/LatestVersion-2.1.5-orange.svg)](https://github.com/xiaoyaoyou1212/XSnow/blob/master/VERSION.md)
+
+最新版本更新记录
+
+- V2.1.5（2017-12-29）
+    - 修复缓存key错乱问题；
+    - 修复日志打印body不显示问题；
+    - 修复缓存策略“优先网络策略”请求失败无法加载缓存问题。
 
 ### 代码托管
-[![JCenter](https://img.shields.io/badge/JCenter-2.1.1-orange.svg)](https://jcenter.bintray.com/com/vise/xiaoyaoyou/xsnow/2.1.1/)
+[![JCenter](https://img.shields.io/badge/JCenter-2.1.5-orange.svg)](https://jcenter.bintray.com/com/vise/xiaoyaoyou/xsnow/2.1.5/)
 
 ## 效果展示
 ![操作演示动画](https://github.com/xiaoyaoyou1212/XSnow/blob/master/screenshot/screenshot.gif)
@@ -349,11 +356,11 @@ ViseHttp.DOWNLOAD("weixin/android/weixin6330android920.apk")
 
 ### 使用示例：
 
-- 发送事件：`BusFactory.getBus().post(new AuthorEvent().setAuthorModel(mAuthorModel));`
+- 发送事件：`BusManager.getBus().post(new AuthorEvent().setAuthorModel(mAuthorModel));`
 
-- 注册事件：`BusFactory.getBus().register(this);`
+- 注册事件：`BusManager.getBus().register(this);`
 
-- 取消注册：`BusFactory.getBus().unregister(this);`
+- 取消注册：`BusManager.getBus().unregister(this);`
 
 - 接收事件：
 ```
@@ -364,7 +371,7 @@ public void showAuthor(IEvent event) {
     }
 }
 ```
-如果需要定制使用其他Bus如EventBus，那么只需将实现IBus接口的对象在应用初始化时通过`BusFactory.setBus(new EventBus())`传进去即可。
+如果需要定制使用其他Bus如EventBus，那么只需将实现IBus接口的对象在应用初始化时通过`BusManager.setBus(new EventBus())`传进去即可。
 
 ## 数据库
 
@@ -489,6 +496,68 @@ mStatusLayoutManager = StatusLayoutManager.newBuilder(mContext)
         }).build();
 mLayoutMain.addView(mStatusLayoutManager.getStatusLayout());关联根视图
 mStatusLayoutManager.showLoadingView();//显示加载视图
+```
+
+### 混淆配置
+由于 XSnow 库有依赖部分第三方库，所以需要对依赖的第三方库也做相应的混淆保护，具体的混淆配置如下：
+```
+#glide
+-dontwarn com.bumptech.glide.**
+-keep public class * implements com.bumptech.glide.module.GlideModule
+-keep public enum com.bumptech.glide.load.resource.bitmap.ImageHeaderParser$** {
+  **[] $VALUES;
+  public *;
+}
+
+#gson
+-dontwarn com.google.gson.**
+-keep class com.google.gson.** { *; }
+
+#rxjava
+-dontwarn io.reactivex.**
+-keep class io.reactivex.** { *; }
+
+#okhttp
+-dontwarn okio.**
+-keep class okio.** { *; }
+-dontwarn okhttp3.**
+-keep class okhttp3.** { *; }
+
+#retrofit
+-dontwarn retrofit2.**
+-keep class retrofit2.** { *; }
+-keepattributes Signature
+-keepattributes Exceptions
+
+#greendao
+-dontwarn org.greenrobot.greendao.**
+-keep class org.greenrobot.greendao.** { *; }
+-keepclassmembers class * extends org.greenrobot.greendao.AbstractDao {
+    public static java.lang.String TABLENAME;
+}
+-keep class **$Properties
+```
+
+针对 XSnow 库本身的混淆保护配置如下：
+```
+#XSnow
+-dontwarn com.vise.utils.**
+-keep class com.vise.xsnow.event.inner.ThreadMode { *; }
+-keep class com.vise.xsnow.http.api.ApiService { *; }
+-keep class com.vise.xsnow.http.mode.CacheMode
+-keep class com.vise.xsnow.http.mode.CacheResult { *; }
+-keep class com.vise.xsnow.http.mode.DownProgress { *; }
+-keep class com.vise.xsnow.http.strategy.**
+-keepclassmembers class * {
+    @com.vise.xsnow.event.Subscribe <methods>;
+}
+-keep class com.bumptech.glide.Glide
+```
+
+如果有拷贝使用到拓展库 netexpand，那么需要保护 ApiResult 这个类，具体配置如下：
+```
+#netexpand
+-keep class com.vise.netexpand.mode.ApiResult { *; }
 ```
 
 ### 注意事项
